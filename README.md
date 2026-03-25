@@ -6,6 +6,15 @@ Backend REST API para gestión de presupuestos personales por workspace. Impleme
 
 - Docker y Docker Compose
 
+## Configuración inicial
+
+```bash
+# Copiar el archivo de variables de entorno
+cp .env.example .env
+```
+
+El `.env` incluido en el repo contiene valores para desarrollo local. En producción reemplazar `SECRET_KEY` por un valor seguro.
+
 ## Levantar el proyecto
 
 ```bash
@@ -25,23 +34,23 @@ docker compose exec backend sh -c "cd /app && alembic upgrade head"
 
 ## Tests
 
-Todos los tests corren dentro del contenedor contra una base de datos real `habi_test`.
+Los tests corren dentro del contenedor. La variable `TEST_DATABASE_URL` se lee del `.env`.
 
 ```bash
 # Crear la DB de test (solo la primera vez)
 docker compose exec db psql -U habi -d habi_db -c "CREATE DATABASE habi_test;"
 
-# Tests de integración (repositorios contra DB)
-docker compose exec backend sh -c "cd /app && TEST_DATABASE_URL='postgresql+asyncpg://habi:habi@db:5432/habi_test' pytest tests/integration/ -v"
-
-# Tests E2E (flujo HTTP completo)
-docker compose exec backend sh -c "cd /app && TEST_DATABASE_URL='postgresql+asyncpg://habi:habi@db:5432/habi_test' pytest tests/e2e/ -v"
-
 # Tests unitarios (sin DB)
 docker compose exec backend pytest tests/unit/ -v
 
+# Tests de integración (repositorios contra DB)
+docker compose exec backend sh -c "cd /app && pytest tests/integration/ -v"
+
+# Tests E2E (flujo HTTP completo)
+docker compose exec backend sh -c "cd /app && pytest tests/e2e/ -v"
+
 # Todos los tests
-docker compose exec backend sh -c "cd /app && TEST_DATABASE_URL='postgresql+asyncpg://habi:habi@db:5432/habi_test' pytest tests/ -v"
+docker compose exec backend sh -c "cd /app && pytest tests/ -v"
 ```
 
 ## Módulos implementados

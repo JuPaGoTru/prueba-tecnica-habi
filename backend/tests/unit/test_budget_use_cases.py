@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 from app.application.dtos import CreateBudgetInputDTO, UpdateBudgetInputDTO
-from app.application.exceptions import AccessDeniedError, NotFoundError
+from app.application.exceptions import AccessDeniedError, ConflictError, NotFoundError
 from app.application.use_cases.create_budget import CreateBudgetUseCase
 from app.application.use_cases.delete_budget import DeleteBudgetUseCase
 from app.application.use_cases.get_budget import GetBudgetUseCase
@@ -120,7 +120,7 @@ async def test_create_budget_duplicate_raises():
         workspace_id=ws.id, category="Food",
         limit_amount=100.0, period_month=3, period_year=2026
     )
-    with pytest.raises(ValueError, match="already exists"):
+    with pytest.raises(ConflictError, match="already exists"):
         await CreateBudgetUseCase(budget_repo, workspace_repo, member_repo, AsyncMock()).execute(dto, user_id)
 
 
