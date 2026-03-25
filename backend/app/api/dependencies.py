@@ -5,18 +5,29 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.exceptions import InvalidTokenError
 from app.domain.entities import User
-from app.domain.repositories import UserRepository
+from app.domain.repositories import UserRepository, WorkspaceMemberRepository, WorkspaceRepository
 from app.infrastructure.database import get_db
 from app.infrastructure.jwt_service import decode_token
 from app.infrastructure.user_repository import PostgresUserRepository
+from app.infrastructure.workspace_repository import (
+    PostgresWorkspaceMemberRepository,
+    PostgresWorkspaceRepository,
+)
 
 bearer_scheme = HTTPBearer()
 
 
 def get_user_repository(db: AsyncSession = Depends(get_db)) -> UserRepository:
     return PostgresUserRepository(db)
+
+
+def get_workspace_repository(db: AsyncSession = Depends(get_db)) -> WorkspaceRepository:
+    return PostgresWorkspaceRepository(db)
+
+
+def get_member_repository(db: AsyncSession = Depends(get_db)) -> WorkspaceMemberRepository:
+    return PostgresWorkspaceMemberRepository(db)
 
 
 async def get_current_user(

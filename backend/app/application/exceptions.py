@@ -12,3 +12,19 @@ class InactiveUserError(Exception):
 
 class InvalidTokenError(Exception):
     pass
+
+
+class NotFoundError(Exception):
+    pass
+
+
+class AccessDeniedError(Exception):
+    pass
+
+
+class AlreadyMemberError(Exception):
+    pass
+
+
+class CannotModifyOwnerError(Exception):
+    pass
