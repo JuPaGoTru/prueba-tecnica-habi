@@ -73,3 +73,40 @@ class WorkspaceMemberOutputDTO(BaseModel):
     role: WorkspaceRole
     invited_by: UUID | None
     joined_at: datetime
+
+
+# --- Budget ---
+
+class CreateBudgetInputDTO(BaseModel):
+    workspace_id: UUID
+    category: str
+    limit_amount: float
+    period_month: int
+    period_year: int
+
+
+class UpdateBudgetInputDTO(BaseModel):
+    limit_amount: float
+
+
+class BudgetOutputDTO(BaseModel):
+    id: UUID
+    user_id: UUID
+    workspace_id: UUID
+    category: str
+    limit_amount: float
+    period_month: int
+    period_year: int
+    spent_amount: float
+    progress_percentage: float
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: datetime | None
+
+
+class BudgetListOutputDTO(BaseModel):
+    items: list[BudgetOutputDTO]
+    total: int
+    page: int
+    page_size: int

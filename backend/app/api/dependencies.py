@@ -6,7 +6,14 @@ from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities import User
-from app.domain.repositories import UserRepository, WorkspaceMemberRepository, WorkspaceRepository
+from app.domain.repositories import (
+    BudgetRepository,
+    MovementRepository,
+    UserRepository,
+    WorkspaceMemberRepository,
+    WorkspaceRepository,
+)
+from app.infrastructure.budget_repository import PostgresBudgetRepository, PostgresMovementRepository
 from app.infrastructure.database import get_db
 from app.infrastructure.jwt_service import decode_token
 from app.infrastructure.user_repository import PostgresUserRepository
@@ -28,6 +35,14 @@ def get_workspace_repository(db: AsyncSession = Depends(get_db)) -> WorkspaceRep
 
 def get_member_repository(db: AsyncSession = Depends(get_db)) -> WorkspaceMemberRepository:
     return PostgresWorkspaceMemberRepository(db)
+
+
+def get_budget_repository(db: AsyncSession = Depends(get_db)) -> BudgetRepository:
+    return PostgresBudgetRepository(db)
+
+
+def get_movement_repository(db: AsyncSession = Depends(get_db)) -> MovementRepository:
+    return PostgresMovementRepository(db)
 
 
 async def get_current_user(

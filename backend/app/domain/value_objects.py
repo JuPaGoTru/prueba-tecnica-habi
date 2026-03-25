@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass(frozen=True)
@@ -29,3 +30,16 @@ class Password:
             raise ValueError("Password must contain at least one lowercase letter")
         if not re.search(r"\d", self.value):
             raise ValueError("Password must contain at least one digit")
+
+
+@dataclass(frozen=True)
+class BudgetPeriod:
+    month: int
+    year: int
+
+    def __post_init__(self):
+        if not (1 <= self.month <= 12):
+            raise ValueError("period_month must be between 1 and 12")
+        current_year = datetime.now().year
+        if not (2000 <= self.year <= current_year + 10):
+            raise ValueError(f"period_year must be a valid year (2000-{current_year + 10})")

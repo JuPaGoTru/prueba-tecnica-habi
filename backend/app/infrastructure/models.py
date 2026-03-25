@@ -1,11 +1,11 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.domain.entities import WorkspaceRole
+from app.domain.entities import MovementType, WorkspaceRole
 from app.infrastructure.database import Base
 
 
@@ -64,5 +64,54 @@ class WorkspaceMemberModel(Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False, default=WorkspaceRole.VIEWER)
     invited_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     joined_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class BudgetModel(Base):
+    __tablename__ = "budgets"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "category", "period_month", "period_year", name="uq_budget_period"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    limit_amount: Mapped[float] = mapped_column(Float, nullable=False)
+    period_month: Mapped[int] = mapped_column(Integer, nullable=False)
+    period_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class MovementModel(Base):
+    __tablename__ = "movements"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    type: Mapped[str] = mapped_column(String(10), nullable=False)
+    period_month: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    period_year: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

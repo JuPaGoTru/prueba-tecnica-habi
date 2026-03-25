@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities import User, Workspace, WorkspaceMember, WorkspaceRole
+from app.domain.entities import Budget, User, Workspace, WorkspaceMember, WorkspaceRole
 
 
 class UserRepository(ABC):
@@ -59,4 +59,48 @@ class WorkspaceMemberRepository(ABC):
 
     @abstractmethod
     async def remove(self, workspace_id: UUID, user_id: UUID) -> None:
+        raise NotImplementedError
+
+
+class BudgetRepository(ABC):
+    @abstractmethod
+    async def create(self, budget: Budget) -> Budget:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_by_id(self, budget_id: UUID) -> Budget | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_by_period(
+        self, workspace_id: UUID, category: str, month: int, year: int
+    ) -> Budget | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def list_by_workspace(
+        self,
+        workspace_id: UUID,
+        category: str | None,
+        month: int | None,
+        year: int | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[Budget], int]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update(self, budget: Budget) -> Budget:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def soft_delete(self, budget_id: UUID) -> None:
+        raise NotImplementedError
+
+
+class MovementRepository(ABC):
+    @abstractmethod
+    async def get_total_expenses(
+        self, workspace_id: UUID, category: str, month: int, year: int
+    ) -> float:
         raise NotImplementedError

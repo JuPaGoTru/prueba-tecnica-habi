@@ -52,3 +52,36 @@ class WorkspaceMember:
     role: WorkspaceRole
     invited_by: UUID | None
     joined_at: datetime
+
+
+class MovementType(str, Enum):
+    INCOME = "income"
+    EXPENSE = "expense"
+
+
+@dataclass
+class Budget:
+    id: UUID
+    user_id: UUID
+    workspace_id: UUID
+    category: str
+    limit_amount: float
+    period_month: int   # 1-12
+    period_year: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: datetime | None
+
+
+@dataclass
+class Movement:
+    id: UUID
+    workspace_id: UUID
+    user_id: UUID
+    category: str
+    amount: float
+    type: MovementType
+    period_month: int
+    period_year: int
+    created_at: datetime
