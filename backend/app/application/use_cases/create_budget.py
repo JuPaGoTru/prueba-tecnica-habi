@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from app.application.dtos import BudgetOutputDTO, CreateBudgetInputDTO
-from app.application.exceptions import AccessDeniedError, NotFoundError
+from app.application.exceptions import AccessDeniedError, ConflictError, NotFoundError
 from app.domain.entities import Budget, WorkspaceRole
 from app.domain.repositories import (
     BudgetRepository,
@@ -45,7 +45,7 @@ class CreateBudgetUseCase:
             dto.workspace_id, dto.category.strip(), dto.period_month, dto.period_year
         )
         if existing:
-            raise ValueError(
+            raise ConflictError(
                 f"A budget for category '{dto.category}' in {dto.period_month}/{dto.period_year} already exists"
             )
 

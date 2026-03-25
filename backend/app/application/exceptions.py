@@ -28,3 +28,7 @@ class AlreadyMemberError(Exception):
 
 class CannotModifyOwnerError(Exception):
     pass
+
+
+class ConflictError(Exception):
+    pass

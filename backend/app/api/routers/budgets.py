@@ -8,7 +8,7 @@ from app.application.dtos import (
     CreateBudgetInputDTO,
     UpdateBudgetInputDTO,
 )
-from app.application.exceptions import AccessDeniedError, NotFoundError
+from app.application.exceptions import AccessDeniedError, ConflictError, NotFoundError
 from app.application.use_cases.create_budget import CreateBudgetUseCase
 from app.application.use_cases.delete_budget import DeleteBudgetUseCase
 from app.application.use_cases.get_budget import GetBudgetUseCase
@@ -42,6 +42,8 @@ def _handle_errors(func):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         except AccessDeniedError as e:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+        except ConflictError as e:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
     return wrapper
