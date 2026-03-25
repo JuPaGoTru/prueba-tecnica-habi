@@ -99,6 +99,37 @@ backend/app/
 
 **Alembic async**: Las migraciones usan `async_engine_from_config` y `asyncio.run()` para compatibilidad con asyncpg. Se ejecutan desde dentro del contenedor.
 
+**Refresh token stateless**: El refresh token es un JWT firmado de larga duración. Al usarlo se emite un nuevo par de tokens, pero el token anterior permanece técnicamente válido hasta su expiración natural. Una implementación con invalidación inmediata requeriría almacenar tokens en base de datos o una blacklist en Redis; esa complejidad se omitió intencionalmente para mantener la arquitectura stateless. El riesgo se mitiga con TTL cortos en el access token (30 min) y razonablemente cortos en el refresh (7 días).
+
+**Justificación de librerías**:
+- `bcrypt` directo (sin `passlib`): passlib tiene incompatibilidad con bcrypt >= 4.x en Python 3.12+; se usa bcrypt directamente para evitar el problema.
+- `python-jose`: librería estándar del ecosistema FastAPI para JWT.
+- `asyncpg`: driver async nativo para PostgreSQL, requerido por SQLAlchemy async.
+- `pydantic-settings`: gestión de configuración con tipado y soporte a `.env`.
+
+## Usuarios de prueba
+
+No hay datos precargados. Para crear un usuario y explorar la API:
+
+```bash
+# Registrar un usuario (devuelve access_token y refresh_token)
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "Test1234!", "full_name": "Test User"}'
+
+# Alternativamente, usar la documentación interactiva en:
+# http://localhost:8000/docs
+```
+
+El access token obtenido se pasa como `Authorization: Bearer <token>` en los endpoints protegidos.
+
+## Limitaciones y aspectos no implementados
+
+- **Frontend**: No implementado. La prueba se resolvió backend-only (Python/FastAPI). El módulo React/TypeScript queda fuera del alcance de esta entrega.
+- **Invalidación de refresh token**: Como se describe en las decisiones técnicas, el refresh token es stateless. No se implementó blacklist ni rotación con persistencia en DB.
+- **Endpoints de movimientos**: La tabla `movements` existe en el schema y el repositorio `MovementRepository` está implementado para calcular el progreso de presupuestos, pero no se exponen endpoints CRUD para movimientos (no eran requeridos por el enunciado).
+- **Tests unitarios para repositorios**: Los repositorios se cubren con tests de integración contra DB real. No se agregaron tests unitarios adicionales con sesión mockeada, ya que la cobertura de comportamiento queda garantizada por los integration tests.
+
 ## Variables de entorno
 
 | Variable | Default | Descripción |
