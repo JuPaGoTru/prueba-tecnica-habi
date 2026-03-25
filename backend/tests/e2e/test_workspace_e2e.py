@@ -120,3 +120,98 @@ async def test_invite_and_remove_member(client: AsyncClient):
 async def test_unauthorized_without_token(client: AsyncClient):
     response = await client.get("/api/v1/workspaces")
     assert response.status_code == 401
+
+
+# --- Permission / role enforcement ---
+
+async def test_non_member_cannot_access_workspace(client: AsyncClient):
+    owner_token = await _register_and_login(client, "ws_perm_owner@example.com")
+    stranger_token = await _register_and_login(client, "ws_perm_stranger@example.com")
+
+    ws_id = (await client.post(
+        "/api/v1/workspaces",
+        json={"name": "Private WS"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()["id"]
+
+    response = await client.get(
+        f"/api/v1/workspaces/{ws_id}",
+        headers={"Authorization": f"Bearer {stranger_token}"},
+    )
+    assert response.status_code == 403
+
+
+async def test_editor_cannot_update_workspace(client: AsyncClient):
+    owner_token = await _register_and_login(client, "ws_perm_ed_owner@example.com")
+    editor_token = await _register_and_login(client, "ws_perm_editor@example.com")
+
+    ws_id = (await client.post(
+        "/api/v1/workspaces",
+        json={"name": "Restricted WS"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()["id"]
+
+    await client.post(
+        f"/api/v1/workspaces/{ws_id}/members",
+        json={"email": "ws_perm_editor@example.com", "role": "editor"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+
+    response = await client.put(
+        f"/api/v1/workspaces/{ws_id}",
+        json={"name": "Hacked Name"},
+        headers={"Authorization": f"Bearer {editor_token}"},
+    )
+    assert response.status_code == 403
+
+
+async def test_remove_owner_rejected(client: AsyncClient):
+    owner_token = await _register_and_login(client, "ws_perm_rm_owner@example.com")
+
+    ws_id = (await client.post(
+        "/api/v1/workspaces",
+        json={"name": "Owner WS"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()["id"]
+
+    members = (await client.get(
+        f"/api/v1/workspaces/{ws_id}/members",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()
+    owner_user_id = next(m["user_id"] for m in members if m["role"] == "owner")
+
+    response = await client.delete(
+        f"/api/v1/workspaces/{ws_id}/members/{owner_user_id}",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert response.status_code == 409
+
+
+async def test_assign_owner_role_rejected(client: AsyncClient):
+    owner_token = await _register_and_login(client, "ws_perm_asgn_owner@example.com")
+    await _register_and_login(client, "ws_perm_asgn_editor@example.com")
+
+    ws_id = (await client.post(
+        "/api/v1/workspaces",
+        json={"name": "Role WS"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()["id"]
+
+    await client.post(
+        f"/api/v1/workspaces/{ws_id}/members",
+        json={"email": "ws_perm_asgn_editor@example.com", "role": "editor"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+
+    members = (await client.get(
+        f"/api/v1/workspaces/{ws_id}/members",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )).json()
+    editor_user_id = next(m["user_id"] for m in members if m["role"] == "editor")
+
+    response = await client.put(
+        f"/api/v1/workspaces/{ws_id}/members/{editor_user_id}",
+        json={"role": "owner"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert response.status_code == 409
