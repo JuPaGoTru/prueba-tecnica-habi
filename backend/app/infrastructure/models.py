@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Un
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.domain.entities import MovementType, WorkspaceRole
+from app.domain.entities import WorkspaceRole
 from app.infrastructure.database import Base
 
 
