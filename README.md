@@ -78,6 +78,10 @@ docker compose exec backend sh -c "cd /app && pytest tests/ -v"
 - `PUT /api/v1/budgets/{id}` — Actualizar monto límite
 - `DELETE /api/v1/budgets/{id}` — Soft delete
 
+### Módulo 4 — Movimientos
+- `POST /api/v1/movements` — Registrar movimiento (ingreso o gasto) en un workspace
+- `GET /api/v1/movements?workspace_id=...` — Listar movimientos con filtros opcionales (categoría, mes, año)
+
 ## Arquitectura
 
 Arquitectura limpia en cuatro capas:
@@ -136,7 +140,7 @@ El access token obtenido se pasa como `Authorization: Bearer <token>` en los end
 
 - **Frontend**: No implementado. La prueba se resolvió backend-only (Python/FastAPI). El módulo React/TypeScript queda fuera del alcance de esta entrega.
 - **Invalidación de refresh token**: Como se describe en las decisiones técnicas, el refresh token es stateless. No se implementó blacklist ni rotación con persistencia en DB.
-- **Endpoints de movimientos**: La tabla `movements` existe en el schema y el repositorio `MovementRepository` está implementado para calcular el progreso de presupuestos, pero no se exponen endpoints CRUD para movimientos (no eran requeridos por el enunciado).
+- **Endpoints de movimientos**: Se implementaron `POST /movements` y `GET /movements` para registrar y listar transacciones financieras. Los movimientos de tipo `expense` alimentan el cálculo dinámico de progreso de los presupuestos.
 - **Tests unitarios para repositorios**: Los repositorios se cubren con tests de integración contra DB real. No se agregaron tests unitarios adicionales con sesión mockeada, ya que la cobertura de comportamiento queda garantizada por los integration tests.
 
 ## Variables de entorno
