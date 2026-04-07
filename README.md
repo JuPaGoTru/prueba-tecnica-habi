@@ -112,6 +112,8 @@ backend/app/
 
 **Alembic async**: Las migraciones usan `async_engine_from_config` y `asyncio.run()` para compatibilidad con asyncpg. Se ejecutan desde dentro del contenedor.
 
+**Endpoints de movimientos**: El enunciado solo requería calcular el progreso dinámicamente desde movimientos existentes. Se implementaron `POST /movements` y `GET /movements` para poder demostrar ese cálculo en vivo — sin ellos el `progress_percentage` siempre sería `0%` en cualquier demo. El costo fue bajo: la tabla, el modelo y la interfaz del repositorio ya existían.
+
 **Refresh token stateless**: El refresh token es un JWT firmado de larga duración. Al usarlo se emite un nuevo par de tokens, pero el token anterior permanece técnicamente válido hasta su expiración natural. Una implementación con invalidación inmediata requeriría almacenar tokens en base de datos o una blacklist en Redis; esa complejidad se omitió intencionalmente para mantener la arquitectura stateless. El riesgo se mitiga con TTL cortos en el access token (30 min) y razonablemente cortos en el refresh (7 días).
 
 **Justificación de librerías**:
@@ -140,7 +142,6 @@ El access token obtenido se pasa como `Authorization: Bearer <token>` en los end
 
 - **Frontend**: No implementado. La prueba se resolvió backend-only (Python/FastAPI). El módulo React/TypeScript queda fuera del alcance de esta entrega.
 - **Invalidación de refresh token**: Como se describe en las decisiones técnicas, el refresh token es stateless. No se implementó blacklist ni rotación con persistencia en DB.
-- **Endpoints de movimientos**: Se implementaron `POST /movements` y `GET /movements` para registrar y listar transacciones financieras. Los movimientos de tipo `expense` alimentan el cálculo dinámico de progreso de los presupuestos.
 - **Tests unitarios para repositorios**: Los repositorios se cubren con tests de integración contra DB real. No se agregaron tests unitarios adicionales con sesión mockeada, ya que la cobertura de comportamiento queda garantizada por los integration tests.
 
 ## Variables de entorno
