@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities import Budget, User, Workspace, WorkspaceMember, WorkspaceRole
+from app.domain.entities import Budget, Movement, User, Workspace, WorkspaceMember, WorkspaceRole
 
 
 class UserRepository(ABC):
@@ -99,6 +99,16 @@ class BudgetRepository(ABC):
 
 
 class MovementRepository(ABC):
+    @abstractmethod
+    async def create(self, movement: Movement) -> Movement:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def list_by_workspace(
+        self, workspace_id: UUID, category: str | None, month: int | None, year: int | None
+    ) -> list[Movement]:
+        raise NotImplementedError
+
     @abstractmethod
     async def get_total_expenses(
         self, workspace_id: UUID, category: str, month: int, year: int

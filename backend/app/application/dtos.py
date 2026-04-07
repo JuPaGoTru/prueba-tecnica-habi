@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
-from app.domain.entities import WorkspaceRole
+from app.domain.entities import MovementType, WorkspaceRole
 
 
 # --- Auth ---
@@ -110,3 +110,26 @@ class BudgetListOutputDTO(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+# --- Movement ---
+
+class CreateMovementInputDTO(BaseModel):
+    workspace_id: UUID
+    category: str
+    amount: float
+    type: MovementType
+    period_month: int
+    period_year: int
+
+
+class MovementOutputDTO(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    user_id: UUID
+    category: str
+    amount: float
+    type: MovementType
+    period_month: int
+    period_year: int
+    created_at: datetime

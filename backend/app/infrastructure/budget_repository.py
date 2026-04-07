@@ -117,9 +117,53 @@ class PostgresBudgetRepository(BudgetRepository):
         await self._session.flush()
 
 
+def _to_movement(m: MovementModel) -> Movement:
+    return Movement(
+        id=m.id,
+        workspace_id=m.workspace_id,
+        user_id=m.user_id,
+        category=m.category,
+        amount=m.amount,
+        type=MovementType(m.type),
+        period_month=m.period_month,
+        period_year=m.period_year,
+        created_at=m.created_at,
+    )
+
+
 class PostgresMovementRepository(MovementRepository):
     def __init__(self, session: AsyncSession):
         self._session = session
+
+    async def create(self, movement: Movement) -> Movement:
+        model = MovementModel(
+            id=movement.id,
+            workspace_id=movement.workspace_id,
+            user_id=movement.user_id,
+            category=movement.category,
+            amount=movement.amount,
+            type=movement.type.value,
+            period_month=movement.period_month,
+            period_year=movement.period_year,
+            created_at=movement.created_at,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return _to_movement(model)
+
+    async def list_by_workspace(
+        self, workspace_id: UUID, category: str | None, month: int | None, year: int | None
+    ) -> list[Movement]:
+        query = select(MovementModel).where(MovementModel.workspace_id == workspace_id)
+        if category:
+            query = query.where(MovementModel.category == category)
+        if month:
+            query = query.where(MovementModel.period_month == month)
+        if year:
+            query = query.where(MovementModel.period_year == year)
+        query = query.order_by(MovementModel.created_at.desc())
+        result = await self._session.execute(query)
+        return [_to_movement(m) for m in result.scalars().all()]
 
     async def get_total_expenses(
         self, workspace_id: UUID, category: str, month: int, year: int
