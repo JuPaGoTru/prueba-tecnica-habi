@@ -2,6 +2,8 @@
 
 Backend REST API para gestión de presupuestos personales por workspace. Implementado en Python con FastAPI, PostgreSQL y arquitectura limpia.
 
+[![English](https://img.shields.io/badge/lang-English-blue)](README_EN.md)
+
 ## Requisitos
 
 - Docker y Docker Compose
